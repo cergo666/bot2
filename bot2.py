@@ -9,6 +9,7 @@ import urllib.request
 
 from PIL import Image
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -159,8 +160,11 @@ def rain(update, context):
     driver.set_window_size(1600, 900)
     driver.get(rain_url)
     element = driver.find_element(By.CLASS_NAME, "weather-maps__map")
-    weather_more = driver.find_element(
-        By.CLASS_NAME, "weather-maps-fact__nowcast-alert").text
+    try:
+        weather_more = driver.find_element(
+            By.CLASS_NAME, "weather-maps-fact__nowcast-alert").text
+    except NoSuchElementException:
+        weather_more = "Ничего не происходит"
     time.sleep(2)
     element.screenshot('tmp/wy.png')
     fileya = open('tmp/wy.png', 'rb')
