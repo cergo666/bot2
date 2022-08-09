@@ -7,7 +7,6 @@ import re
 import time
 import urllib.request
 
-from bs4 import BeautifulSoup
 from PIL import Image
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -32,7 +31,8 @@ def start(update, context):
 
 
 def echo(update, context):
-    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+    context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.TYPING)
     f = open('data/1.txt', 'r', encoding='UTF-8')
     words = f.read().split('\n')
     f.close()
@@ -61,7 +61,8 @@ def m(update, context):
         im = background
     im.convert("RGB").save('tmp/m.jpg')
     file = open('tmp/m.jpg', 'rb')
-    updater.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
+    updater.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     updater.bot.send_photo(update.effective_chat.id, file,
                            caption='Магнитные бури за 3 дня')
     file.close()
@@ -81,7 +82,8 @@ def sun(update, context):
         im = background
     im.convert("RGB").save('tmp/sun.jpg')
     file1 = open('tmp/sun.jpg', 'rb')
-    updater.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
+    updater.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     updater.bot.send_photo(update.effective_chat.id, file1,
                            caption='Вспышки на солнце за 2 дня')
     file1.close()
@@ -142,7 +144,8 @@ def w(update, context):
     element = driver.find_element(By.CLASS_NAME, "widget-weather")
     element.screenshot('tmp/w.png')
     fileww = open('tmp/w.png', 'rb')
-    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
+    context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileww,
                            caption='Погода на 10 дней')
     fileww.close()
@@ -155,18 +158,16 @@ def rain(update, context):
     driver = webdriver.Firefox(options=options)
     driver.set_window_size(1600, 900)
     driver.get(rain_url)
-    content = driver.page_source
-    soup = BeautifulSoup(content, 'lxml')
-    mydivs = soup.find(
-        "div", {"class": "weather-maps-fact__nowcast-alert"}).text
-    print(mydivs)
     element = driver.find_element(By.CLASS_NAME, "weather-maps__map")
-    time.sleep(1)
+    weather_more = driver.find_element(
+        By.CLASS_NAME, "weather-maps-fact__nowcast-alert").text
+    time.sleep(2)
     element.screenshot('tmp/wy.png')
     fileya = open('tmp/wy.png', 'rb')
-    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
+    context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileya,
-                           caption=mydivs)
+                           caption=weather_more)
     fileya.close()
     os.remove('tmp/wy.png')
 
@@ -180,7 +181,8 @@ def yaw(update, context):
     time.sleep(1)
     element.screenshot('tmp/yaw.png')
     fileya = open('tmp/yaw.png', 'rb')
-    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
+    context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileya,
                            caption='Погода')
     fileya.close()
@@ -188,7 +190,8 @@ def yaw(update, context):
 
 
 def getto(update, context):
-    context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+    context.bot.send_chat_action(
+        chat_id=update.effective_chat.id, action=ChatAction.TYPING)
     with urllib.request.urlopen('%s' % (narodmon_url)) as url:
         data = json.loads(url.read().decode())
     context.bot.send_message(chat_id=update.effective_chat.id,
