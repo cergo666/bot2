@@ -4,14 +4,17 @@ import logging
 import os
 import random
 import re
+import tempfile
 import time
 import urllib.request
 
 from PIL import Image
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.chataction import ChatAction
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
@@ -22,6 +25,14 @@ from data.token import *
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
+
+
+if os.name == 'nt':
+    ffmpeg = 'bin/ffmpeg.exe'
+    binary = 'firefox_binary=bin/geckodriver.exe'
+else:
+    ffmpeg = 'ffmpeg'
+    binary = ''
 
 updater.bot.send_message(164811956, text='Стартуем')
 
@@ -51,45 +62,45 @@ def echo(update, context):
 
 
 def m(update, context):
+    impng = tempfile.NamedTemporaryFile(suffix='.png')
+    imjpg = tempfile.NamedTemporaryFile(suffix='.jpg')
     urllib.request.urlretrieve(
-        "https://tesis.xras.ru/upload_test/files/kp_R4LB.png", "tmp/m.png")
-    im = Image.open('tmp/m.png')
+        "https://tesis.xras.ru/upload_test/files/kp_R4LB.png", impng.name)
+    im = Image.open(impng.name)
     fill_color = (0, 0, 0)
     im = im.convert("RGBA")
     if im.mode in ('RGBA', 'LA'):
         background = Image.new(im.mode[:-1], im.size, fill_color)
         background.paste(im, im.split()[-1])  # omit transparency
         im = background
-    im.convert("RGB").save('tmp/m.jpg')
-    file = open('tmp/m.jpg', 'rb')
+    im.convert("RGB").save(imjpg.name)
+    file = open(imjpg.name, 'rb')
     updater.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     updater.bot.send_photo(update.effective_chat.id, file,
                            caption='Магнитные бури за 3 дня')
     file.close()
-    os.remove('tmp/m.jpg')
-    os.remove('tmp/m.png')
 
 
 def sun(update, context):
+    impng = tempfile.NamedTemporaryFile(suffix='.png')
+    imjpg = tempfile.NamedTemporaryFile(suffix='.jpg')
     urllib.request.urlretrieve(
-        "https://tesis.xras.ru/upload_test/files/flares_R4LB.png", "tmp/sun.png")
-    im = Image.open('tmp/sun.png')
+        "https://tesis.xras.ru/upload_test/files/flares_R4LB.png", impng.name)
+    im = Image.open(impng.name)
     fill_color = (0, 0, 0)
     im = im.convert("RGBA")
     if im.mode in ('RGBA', 'LA'):
         background = Image.new(im.mode[:-1], im.size, fill_color)
         background.paste(im, im.split()[-1])  # omit transparency
         im = background
-    im.convert("RGB").save('tmp/sun.jpg')
-    file1 = open('tmp/sun.jpg', 'rb')
+    im.convert("RGB").save(imjpg.name)
+    file1 = open(imjpg.name, 'rb')
     updater.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     updater.bot.send_photo(update.effective_chat.id, file1,
                            caption='Вспышки на солнце за 2 дня')
     file1.close()
-    os.remove('tmp/sun.jpg')
-    os.remove('tmp/sun.png')
 
 
 def id(update, context):
@@ -127,70 +138,84 @@ def id(update, context):
 
 
 def v(update, context):
-    cmd = 'ffmpeg -user_agent %s -headers "origin: %s" -headers "referer: %s" -i "https://cctv.on-telecom.ru:4080/hls/%s/playlist.m3u8" -ss 00:00:01 -vframes 1 -q:v 1 tmp/v.png' % (
-        user_agent, url, url, kreml_id)
+    impng_v = tempfile.NamedTemporaryFile(suffix='.png')
+    cmd = '%s -y -user_agent %s -headers "origin: %s" -headers "referer: %s" -i "https://cctv.on-telecom.ru:4080/hls/%s/playlist.m3u8" -ss 00:00:01 -vframes 1 -q:v 1 %s' % (
+        ffmpeg, user_agent, url, url, kreml_id, impng_v.name)
     os.system(cmd)
-    file = open('tmp/v.png', 'rb')
+    file = open(impng_v.name, 'rb')
     context.bot.send_photo(update.effective_chat.id, file,
                            caption='Кремль')
     file.close()
-    os.remove('tmp/v.png')
 
 
 def w(update, context):
+    impng = tempfile.NamedTemporaryFile(suffix='.png')
     options = Options()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(binary, options=options)
     driver.get(gismeteo10_url)
     element = driver.find_element(By.CLASS_NAME, "widget-weather")
-    element.screenshot('tmp/w.png')
-    fileww = open('tmp/w.png', 'rb')
+    element.screenshot(impng.name)
+    fileww = open(impng.name, 'rb')
     context.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileww,
                            caption='Погода на 10 дней')
     fileww.close()
-    os.remove('tmp/w.png')
+    driver.close()
 
 
 def rain(update, context):
+    impng = tempfile.NamedTemporaryFile(suffix='.png')
     options = Options()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(binary, options=options)
     driver.set_window_size(1600, 900)
     driver.get(rain_url)
-    element = driver.find_element(By.CLASS_NAME, "weather-maps__map")
+    try:
+        element = WebDriverWait(driver, 3).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "weather-maps__map")))
+    except TimeoutException as ex:
+        driver.close()
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Яндекс пропал"+str(ex.msg))
+    try:
+        weather_base = driver.find_element(
+            By.CLASS_NAME, "weather-maps-fact__condition").text
+    except NoSuchElementException:
+        weather_base = ""
     try:
         weather_more = driver.find_element(
             By.CLASS_NAME, "weather-maps-fact__nowcast-alert").text
     except NoSuchElementException:
-        weather_more = "Ничего не происходит"
+        weather_more = ""
     time.sleep(2)
-    element.screenshot('tmp/wy.png')
-    fileya = open('tmp/wy.png', 'rb')
+    element.screenshot(impng.name)
+    fileya = open(impng.name, 'rb')
     context.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileya,
-                           caption=weather_more)
+                           caption=weather_base+'\n'+weather_more)
     fileya.close()
-    os.remove('tmp/wy.png')
+    driver.close()
 
 
 def yaw(update, context):
+    impng = tempfile.NamedTemporaryFile(suffix='.png')
     options = Options()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(binary, options=options)
     driver.get(pogoda_url)
     element = driver.find_element(By.CLASS_NAME, "forecast-briefly")
     time.sleep(1)
-    element.screenshot('tmp/yaw.png')
-    fileya = open('tmp/yaw.png', 'rb')
+    element.screenshot(impng.name)
+    fileya = open(impng.name, 'rb')
     context.bot.send_chat_action(
         chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO)
     context.bot.send_photo(update.effective_chat.id, fileya,
                            caption='Погода')
     fileya.close()
-    os.remove('tmp/yaw.png')
+    driver.close()
 
 
 def getto(update, context):
