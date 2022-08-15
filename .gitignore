@@ -1,7 +1,5 @@
 geckodriver.log
-img.png
 data/1.txt
-1.png
-data/__pycache__/*
 data/token.py
 tmp/*
+**/__pycache__/*
