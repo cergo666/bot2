@@ -24,7 +24,7 @@ def start(update, context):
 
 
 def echo(update, context):
-    if update.message.reply_to_message:
+    if update.message.reply_to_message.from_user.is_bot:
         context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.TYPING)
         f = open('data/1.txt', 'r', encoding='UTF-8')
@@ -51,6 +51,6 @@ dispatcher.add_handler(CommandHandler('fire', get_fires))
 dispatcher.add_handler(CallbackQueryHandler(menu_actions))
 dispatcher.add_handler(CallbackQueryHandler(cam))
 dispatcher.add_handler(MessageHandler(Filters.regex(r'dec$'), translate))
-dispatcher.add_handler(MessageHandler(Filters.text, echo))
+dispatcher.add_handler(MessageHandler(Filters.reply, echo))
 updater.start_polling()
 updater.idle()
