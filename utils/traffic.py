@@ -3,10 +3,8 @@ import time
 
 from data.config import *
 from data.token import *
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from telegram.chataction import ChatAction
@@ -14,9 +12,7 @@ from telegram.chataction import ChatAction
 
 def get_traffic(update, context):
     trafpng = tempfile.NamedTemporaryFile(suffix='.png')
-    options = Options()
-    options.headless = True
-    driver = webdriver.Firefox(binary, options=options)
+    driver=driver_init()
     driver.set_window_size(1600, 900)
     driver.get(traffic_url)
     try:

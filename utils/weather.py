@@ -16,9 +16,7 @@ from telegram.chataction import ChatAction
 
 def get_gis10(update, context):
     impng = tempfile.NamedTemporaryFile(suffix='.png')
-    options = Options()
-    options.headless = True
-    driver = webdriver.Firefox(binary, options=options)
+    driver=driver_init()
     driver.get(gismeteo10_url)
     element = driver.find_element(By.CLASS_NAME, "widget-weather")
     element.screenshot(impng.name)
@@ -33,9 +31,7 @@ def get_gis10(update, context):
 
 def get_ya10(update, context):
     impng = tempfile.NamedTemporaryFile(suffix='.png')
-    options = Options()
-    options.headless = True
-    driver = webdriver.Firefox(binary, options=options)
+    driver=driver_init()
     driver.get(pogoda_url)
     element = driver.find_element(By.CLASS_NAME, "forecast-briefly")
     time.sleep(1)

@@ -63,7 +63,7 @@ def menu_actions(update, context):
                                       reply_markup=reply_markup)
     elif query.data == 'b2_video':
         menu_2 = [[InlineKeyboardButton('Кремль', callback_data='s1_video')],
-                  [InlineKeyboardButton('Окружная_', callback_data='s2_video')]]
+                  [InlineKeyboardButton('Почтовая', callback_data='s2_video')]]
         reply_markup = InlineKeyboardMarkup(menu_2)
         updater.bot.edit_message_text(chat_id=query.message.chat_id,
                                       message_id=query.message.message_id,

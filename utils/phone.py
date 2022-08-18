@@ -36,4 +36,4 @@ def get_phone(update, context):
         csvfile.close()
     else:
         context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text='Иди нахуй, это не телефон.\nВведи в формате 7хххххххххх')
+                                 text='Иди нахуй, это не телефон.\nВведи в формате /id 7хххххххххх')

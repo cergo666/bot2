@@ -24,29 +24,33 @@ def start(update, context):
 
 
 def echo(update, context):
-    context.bot.send_chat_action(
-        chat_id=update.effective_chat.id, action=ChatAction.TYPING)
-    f = open('data/1.txt', 'r', encoding='UTF-8')
-    words = f.read().split('\n')
-    f.close()
-    my_file = open("data/1.txt", "a")
-    if update.message.text not in words:
-        my_file.writelines(update.message.text+'\n')
-        logging.critical(update.message.text+' добавлено в словарь: ' +
-                         str(update.message.from_user.username))
-    context.bot.send_message(
-        chat_id=update.effective_chat.id, text=random.choice(words))
-    my_file.close()
+    if update.message.reply_to_message:
+        context.bot.send_chat_action(
+            chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+        f = open('data/1.txt', 'r', encoding='UTF-8')
+        words = f.read().split('\n')
+        f.close()
+        my_file = open("data/1.txt", "a")
+        if update.message.text not in words:
+            my_file.writelines(update.message.text+'\n')
+            logging.critical(update.message.text+' добавлено в словарь: ' +
+                            str(update.message.from_user.username))
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text=random.choice(words))
+        my_file.close()
 
 
-dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('sun', sun))
 dispatcher.add_handler(CommandHandler('id', get_phone))
 dispatcher.add_handler(CommandHandler('cam', cam))
 dispatcher.add_handler(CommandHandler('w', w))
 dispatcher.add_handler(CommandHandler('traffic', get_traffic))
+dispatcher.add_handler(CommandHandler('river', get_river))
+dispatcher.add_handler(CommandHandler('fire', get_fires))
 dispatcher.add_handler(CallbackQueryHandler(menu_actions))
 dispatcher.add_handler(CallbackQueryHandler(cam))
+dispatcher.add_handler(MessageHandler(Filters.regex(r'dec$'), translate))
+dispatcher.add_handler(MessageHandler(Filters.text, echo))
 updater.start_polling()
 updater.idle()
